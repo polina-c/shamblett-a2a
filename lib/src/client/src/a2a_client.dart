@@ -148,13 +148,13 @@ class A2AClient {
       ..params = (params as dynamic).toJson();
 
     final headers = http.Headers()
-      ..append('Accept', 'application/json')
-      ..append('Content-Type', 'text/event-stream');
+      ..append('Accept', 'text/event-stream')
+      ..append('Content-Type', 'application/json');
     final response = await http.fetch(
       endpoint,
       method: 'POST',
       headers: headers,
-      body: http.Body.json(rpcRequest.toJson()),
+      body: http.Body.text(json.encode(rpcRequest.toJson())),
     );
 
     if (!response.ok) {
@@ -398,18 +398,18 @@ class A2AClient {
       ..params = (params as dynamic).toJson();
 
     final headers = http.Headers()
-      ..append('Accept', 'application/json')
-      ..append('Content-Type', 'text/event-stream');
+      ..append('Accept', 'text/event-stream')
+      ..append('Content-Type', 'application/json');
     final response = await http.fetch(
       endpoint,
       method: 'POST',
       headers: headers,
-      body: http.Body.json(rpcRequest.toJson()),
+      body: http.Body.text(json.encode(rpcRequest.toJson())),
     );
 
     if (!response.ok) {
       var errorBody = '';
-      errorBody = await response.text();
+      errorBody = await utf8.decoder.bind(response.body).join();
       final errorJson = json.decode(errorBody) as Map<String, dynamic>;
       if (errorJson.containsKey('error')) {
         yield (A2AJSONRPCErrorResponseSSM.fromJson(errorJson))..isError = true;
@@ -558,35 +558,47 @@ class A2AClient {
     http.Response response,
     A2AId originalRequestId,
   ) async* {
-    try {
-      final body = http.Body(response.body);
-      final text = await body.text();
-      if (text.isEmpty) {
-        throw Exception(
-          '_parseA2ASseStream:: SSE response body is undefined. Cannot read stream.',
-        );
+    final stream =
+        utf8.decoder.bind(response.body).transform(const LineSplitter());
+    String? event;
+    var data = '';
+
+    await for (final line in stream) {
+      if (line.isEmpty) {
+        // End of event
+        if (data.isNotEmpty) {
+          try {
+            final j = json.decode(data);
+            final item = A2ASendStreamMessageResponse.fromJson(j);
+            if (item.isError) {
+              yield item;
+            } else {
+              final typedItem = item as A2ASendStreamMessageSuccessResponse;
+              if (typedItem.id != null && typedItem.id != originalRequestId) {
+                throw Exception(
+                  '_parseA2ASseStream:: Request/Response id mismatch. Rx : ${item.id}, Tx : $originalRequestId',
+                );
+              }
+              yield item;
+            }
+          } catch (e, s) {
+            // Maybe a malformed JSON in the data part
+            print('_parseA2ASseStream:: Error decoding json from stream $e');
+            Error.throwWithStackTrace(e, s);
+          }
+        }
+        // Reset for next event
+        event = 'message'; // Default event type
+        data = '';
+        continue;
       }
-      LineSplitter ls = LineSplitter();
-      final lines = ls.convert(text);
-      for (final line in lines) {
-        if (line.isEmpty) {
-          continue;
-        }
-        final j = json.decode(line.substring(6));
-        final item = A2ASendStreamMessageResponse.fromJson(j);
-        if (item.isError) {
-          yield item;
-        }
-        final typedItem = item as A2ASendStreamMessageSuccessResponse;
-        if (typedItem.id != null && typedItem.id != originalRequestId) {
-          throw Exception(
-            '_parseA2ASseStream:: Request/Response id mismatch. Rx : ${item.id}, Tx : $originalRequestId',
-          );
-        }
-        yield item;
+
+      if (line.startsWith('event:')) {
+        event = line.substring(6).trim();
+      } else if (line.startsWith('data:')) {
+        data += line.substring(5).trim();
       }
-    } catch (e, s) {
-      Error.throwWithStackTrace(e, s);
+      // Ignore other lines like comments (starting with ':')
     }
   }
 

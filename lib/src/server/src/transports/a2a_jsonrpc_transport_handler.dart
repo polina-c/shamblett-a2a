@@ -91,6 +91,8 @@ class A2AJsonRpcTransportHandler {
               final ret = A2ASendStreamingMessageSuccessResponse();
               ret.id = requestId;
               ret.result = event;
+              print(
+                  '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${ret.toJson()}').green()}');
               yield ret;
             }
           } catch (e, s) {
@@ -116,55 +118,85 @@ class A2AJsonRpcTransportHandler {
             );
             final ret = result as A2AResultResolver;
             if (ret.result != null) {
-              return A2ASendMessageSuccessResponse()
+              final response = A2ASendMessageSuccessResponse()
                 ..id = rpcRequest.id
                 ..result = result;
+              print(
+                  '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+              return response;
             } else {
               // Error
               if (ret.error != null) {
                 final jrpc = (ret.error as A2AServerError).toJSONRPCError();
+                print(
+                    '${Colorize('A2AJsonRpcTransportHandler::handle  Sending error response: ${jrpc.toJson()}').green()}');
                 return jrpc as A2AJSONRPCErrorResponseS;
               } else {
-                return A2AJSONRPCErrorResponseS();
+                final response = A2AJSONRPCErrorResponseS();
+                print(
+                    '${Colorize('A2AJsonRpcTransportHandler::handle  Sending empty error response: ${response.toJson()}').green()}');
+                return response;
               }
             }
           case A2AGetTaskRequest _:
             final result = await _requestHandler.getTask(rpcRequest.params!);
-            return A2AGetTaskSuccessResponse()
+            final response = A2AGetTaskSuccessResponse()
               ..id = rpcRequest.id
               ..result = result;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           case A2ACancelTaskRequest _:
             final result = await _requestHandler.cancelTask(rpcRequest.params!);
-            return A2ACancelTaskSuccessResponse()
+            final response = A2ACancelTaskSuccessResponse()
               ..id = rpcRequest.id
               ..result = result;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           case A2ASetTaskPushNotificationConfigRequest _:
             final result = await _requestHandler.setTaskPushNotificationConfig(
               rpcRequest.params!,
             );
-            return A2ASetTaskPushNotificationConfigSuccessResponse()
-              ..id = rpcRequest.id
-              ..result = result?.pushNotificationConfig;
+            final response =
+                A2ASetTaskPushNotificationConfigSuccessResponse()
+                  ..id = rpcRequest.id
+                  ..result = result?.pushNotificationConfig;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           case A2AGetTaskPushNotificationConfigRequest _:
             final result = await _requestHandler.getTaskPushNotificationConfig(
               rpcRequest.params!,
             );
-            return A2AGetTaskPushNotificationConfigSuccessResponse()
-              ..id = rpcRequest.id
-              ..result = result;
+            final response =
+                A2AGetTaskPushNotificationConfigSuccessResponse()
+                  ..id = rpcRequest.id
+                  ..result = result;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           case A2AListTaskPushNotificationConfigRequest _:
             final result = await _requestHandler
                 .listTaskPushNotificationConfigs(rpcRequest.params!);
-            return A2AListTaskPushNotificationConfigSuccessResponse()
-              ..id = rpcRequest.id
-              ..result = result;
+            final response =
+                A2AListTaskPushNotificationConfigSuccessResponse()
+                  ..id = rpcRequest.id
+                  ..result = result;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           case A2ADeleteTaskPushNotificationConfigRequest _:
             await _requestHandler.deleteTaskPushNotificationConfig(
               rpcRequest.params!,
             );
-            return A2ADeleteTaskPushNotificationConfigSuccessResponse()
-              ..id = rpcRequest.id
-              ..result = null;
+            final response =
+                A2ADeleteTaskPushNotificationConfigSuccessResponse()
+                  ..id = rpcRequest.id
+                  ..result = null;
+            print(
+                '${Colorize('A2AJsonRpcTransportHandler::handle  Sending response: ${response.toJson()}').green()}');
+            return response;
           default:
             throw A2AServerError.methodNotFound(
               'A2AJsonRpcTransportHandler::handle',
