@@ -198,7 +198,8 @@ final class A2AAgentCard extends A2AAgent {
     var fixedJson = json;
     if (json['preferredTransport'] == null) {
       fixedJson = Map<String, dynamic>.from(json);
-      fixedJson['preferredTransport'] = 'JSONRPC';
+      fixedJson['preferredTransport'] = A2ATransportProtocol.jsonRpc.name
+          .toUpperCase();
     }
     return _$A2AAgentCardFromJson(fixedJson);
   }
