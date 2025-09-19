@@ -186,7 +186,7 @@ class A2AClient {
         .startsWith('text/event-stream')) {
       // Server should explicitly set this content type for SSE.
       throw Exception(
-        "sendMessageStream::  Invalid response Content-Type for SSE stream. Expected 'text/event-stream'.",
+        "sendMessageStream::  Invalid response Content-Type for SSE stream: ${response.headers.get('Content-Type')}. Expected 'text/event-stream'.",
       );
     }
     // Yield events from the parsed SSE stream.
