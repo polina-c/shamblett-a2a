@@ -181,14 +181,6 @@ class A2AClient {
         'Status text: ${response.statusText}',
       );
     }
-    if (!response.headers
-        .get('Content-Type')!
-        .startsWith('text/event-stream')) {
-      // Server should explicitly set this content type for SSE.
-      throw Exception(
-        "sendMessageStream::  Invalid response Content-Type for SSE stream: ${response.headers.get('Content-Type')}. Expected 'text/event-stream'.",
-      );
-    }
     // Yield events from the parsed SSE stream.
     // Each event's 'data' field is a JSON-RPC response.
     yield* _parseA2ASseStream(response, requestId);
