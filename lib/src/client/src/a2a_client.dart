@@ -414,14 +414,6 @@ class A2AClient {
       if (errorJson.containsKey('error')) {
         yield (A2AJSONRPCErrorResponseSSM.fromJson(errorJson))..isError = true;
       }
-      if (!response.headers
-          .get('Content-Type')!
-          .startsWith('text/event-stream')) {
-        // Server should explicitly set this content type for SSE.
-        throw Exception(
-          "sendMessageStream::  Invalid response Content-Type for SSE stream. Expected 'text/event-stream'.",
-        );
-      }
     }
     // Yield events from the parsed SSE stream.
     // Each event's 'data' field is a JSON-RPC response.
