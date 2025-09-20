@@ -71,7 +71,7 @@ Future<void> _spikeStreaming() async {
     ..message = message
     ..configuration = configuration;
 
-  final Stream<A2ASendStreamMessageResponse> rpcResponse = await client
+  final Stream<A2ASendStreamMessageResponse> rpcResponse = client
       .sendMessageStream(payload);
 
   final completer = Completer<void>();
