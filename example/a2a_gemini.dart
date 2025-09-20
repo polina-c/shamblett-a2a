@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:a2a/a2a.dart';
 
@@ -15,8 +14,6 @@ class A2aToGeminiCli {
     await _spikeStreaming();
   }
 }
-
-
 
 Future<void> _spikeStreaming() async {
   const baseUrl = 'http://localhost:41242';
@@ -74,8 +71,8 @@ Future<void> _spikeStreaming() async {
     ..message = message
     ..configuration = configuration;
 
-  final Stream<A2ASendStreamMessageResponse> rpcResponse =
-      await client.sendMessageStream(payload);
+  final Stream<A2ASendStreamMessageResponse> rpcResponse = await client
+      .sendMessageStream(payload);
 
   final completer = Completer<void>();
   late final StreamSubscription<A2ASendStreamMessageResponse> subscription;
@@ -100,7 +97,9 @@ Future<void> _spikeStreaming() async {
         }
       } else if (result is A2ATaskStatusUpdateEvent) {
         final message = result.status?.message;
-        if (message != null && message.parts != null && message.parts!.isNotEmpty) {
+        if (message != null &&
+            message.parts != null &&
+            message.parts!.isNotEmpty) {
           final part = message.parts!.first;
           if (part is A2ATextPart) {
             print(part.text);

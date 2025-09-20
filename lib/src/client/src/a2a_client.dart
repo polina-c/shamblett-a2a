@@ -558,9 +558,9 @@ class A2AClient {
     http.Response response,
     A2AId originalRequestId,
   ) async* {
-    final stream =
-        utf8.decoder.bind(response.body).transform(const LineSplitter());
-    String? event;
+    final stream = utf8.decoder
+        .bind(response.body)
+        .transform(const LineSplitter());
     var data = '';
 
     await for (final line in stream) {
@@ -588,13 +588,12 @@ class A2AClient {
           }
         }
         // Reset for next event
-        event = 'message'; // Default event type
+        // Default event type
         data = '';
         continue;
       }
 
       if (line.startsWith('event:')) {
-        event = line.substring(6).trim();
       } else if (line.startsWith('data:')) {
         data += line.substring(5).trim();
       }
