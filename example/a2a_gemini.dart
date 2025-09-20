@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:a2a/a2a.dart';
 
+// dart run a2a_gemini.dart
+
 void main() async {
   final cli = A2aToGeminiCli();
   await cli.start();
